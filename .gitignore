@@ -1,0 +1,28 @@
+node_modules/
+dist/
+.next/
+*.tsbuildinfo
+.env
+.env.local
+.vercel
+
+# Personal content (not for public repo)
+src/data/content.local.json
+
+# Internal project management (not for public repo)
+.portfolio/
+.agents/
+.pipeline/
+STATUS.md
+NEXT-SESSION.md
+CONTEXT.md
+DECISIONS.md
+CLAUDE.local.md
+.claude/settings.local.json
+
+# Playwright
+test-results/
+playwright-report/
+blob-report/
+screenshots/
+specs/

@@ -1,0 +1,122 @@
+# AGENTS.md — personal-portfolio
+
+## Overview
+Personal portfolio website showcasing AI engineering and software development work. Next.js 15 + Tailwind CSS 4 + TypeScript. Targeting Senior Software Developer / AI Engineer roles.
+
+## Commands
+- Install: `npm install`
+- Build: `npm run build`
+- Typecheck: `npm run typecheck`
+- Test all: `npm test`
+- Test single: `npx vitest run tests/<path>`
+- Dev: `npm run dev`
+
+## Workflow (SDD — Spec-Driven Development)
+
+Features are built through a 3-phase lifecycle. **Do not skip phases.**
+
+### Phase 1: Design (interactive — user makes decisions)
+| Command | Description |
+|---------|-------------|
+| `/grill <topic>` | Design interview — exhaustive Q&A exploring design space |
+| `/ba-validate <spec>` | Validate spec quality (structural + semantic) |
+| `/approve <spec>` | Approve spec for implementation |
+| `/researcher <question>` | Deep investigation with parallel explorers (ARIA v2) |
+
+### Phase 2: Implement (automatic — walk away)
+| Command | Description |
+|---------|-------------|
+| `/sdd <feature>` | Full pipeline: plan → test → code → review → retro |
+| `/trio <feature>` | Sprint-only: wave dispatch with worktree isolation |
+
+### Phase 3: Review (human — evaluate results)
+- Play with the feature, file issues if changes needed
+- Run `/sdd` again for fixes, `/grill` for design changes
+
+### Everyday Commands
+| Command | Description |
+|---------|-------------|
+| `/orient [area]` | Map codebase structure, tech stack, commands, architecture |
+| `/quick-review <target>` | Lightweight review — files, diffs, or PRs. Escalate to `/adversarial-review` for complex changes |
+| `/debug <error>` | Dispatch a debugger subagent to investigate a bug |
+
+### Workflow Commands (Dynamic)
+These use Claude Code's dynamic workflows for automated parallel orchestration:
+| Command | Description |
+|---------|-------------|
+| `ultracode: <task>` | Trigger a workflow for a specific task |
+| `/adversarial-review` | Multi-angle code review with adversarial verify |
+| `/deep-audit` | Comprehensive codebase audit |
+| `/research-crosscheck` | Multi-angle research with cross-checked sources |
+| `/migration-sweep` | Codebase-wide migration pipeline |
+
+## Agent Roles
+
+### Main Session (interactive, persistent)
+| Role | Mode | Purpose |
+|------|------|---------|
+| Supervisor/Planner | Default | Orchestrate, diagnose, delegate. Never implements. |
+| Sprint-Manager | `/trio` skill | Wave dispatch, gate ownership, worktree merge |
+| Researcher | `/researcher` skill | ARIA v2 — spawn explorers, synthesize, critic |
+
+### Subagents (spawned by main session, return and die)
+| Role | Type | Purpose |
+|------|------|---------|
+| Coder | Subagent | Make failing tests pass. Never sees spec. |
+| Test-Manager | Subagent | Own RED gate — write tests, verify they fail |
+| Tester | Subagent | Helper for test-manager (additional tests) |
+| Reviewer-Lite | Subagent | Fast review for complexity 4-7 |
+| Reviewer | Subagent | Full adversarial review for complexity 8+ |
+| BA | Subagent | Requirements gathering (complexity 6+) |
+| Architect | Subagent | System design + ADRs (complexity 8+) |
+| Explorer | Subagent | Focused research angle (haiku, parallel) |
+| Research-Critic | Subagent | Adversarial review of research synthesis |
+| UI-Designer | Subagent | Visual design loop (opus) |
+| Data-Analyst | Subagent | Iterative data analysis (sonnet) |
+
+## Coder Workflow (TRIO)
+1. Read this file (AGENTS.md)
+2. Read your briefing (task + test file paths)
+3. Read the failing tests — understand expected behavior
+4. Implement minimal code to make tests pass
+5. Run: `npm test` — verify GREEN
+6. Run: `npm run typecheck` — verify no type errors
+7. Write result to the path specified in your briefing
+
+DO NOT SKIP steps 5-6. If tests fail, fix before proceeding.
+DO NOT read specs/ directory — you work from tests only.
+
+> **Workflow variant**: In workflow-enabled projects, the implementation cycle can be
+> driven by the `wave-dispatch` workflow for automated parallel coder dispatch.
+> Trigger with `ultracode: implement <feature>` or use `/sdd` which delegates automatically.
+
+## Code Style
+- TypeScript strict, no `any` — use `unknown` + guards
+- Full words in names: `processPayment()` not `procPay()`
+- Return types on all public functions
+- Tests verify behavior, not existence
+
+## Boundaries
+### ✅ Always safe
+- Read any file for understanding
+- Run tests, typecheck, lint
+- Modify files in src/ and tests/
+
+### 🚫 Never
+- Read specs/ (information barrier — you work from tests)
+- Modify STATUS.md, NEXT-SESSION.md
+- Use `pool: 'forks'` in vitest (causes OOM)
+- Run raw `tsc --noEmit` (use `npm run typecheck`)
+- Force push, reset --hard, rm -rf
+
+## Testing
+- Runner: vitest (threads pool, NEVER forks)
+- Pattern: `tests/**/*.test.{ts,tsx}`
+- One change → verify → next change. Never stack unverified.
+
+## Project Structure
+- `src/` — source code (your primary output)
+- `tests/` — test files (your primary input)
+- `specs/` — DO NOT READ
+- `.claude/` — agent infrastructure (agents, rules, skills, hooks)
+- `.pipeline/` — pipeline state (read-only)

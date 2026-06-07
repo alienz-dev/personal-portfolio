@@ -1,0 +1,60 @@
+{
+  "highlights": [
+    {
+      "metric": "X% faster",
+      "description": "Describe a key metric and what it measures"
+    },
+    {
+      "metric": "$Xk/year",
+      "description": "Describe cost savings or efficiency gain"
+    },
+    {
+      "metric": "X hrs/week",
+      "description": "Describe time recovered through automation"
+    },
+    {
+      "metric": "X tools",
+      "description": "Describe scale or scope of work"
+    }
+  ],
+  "caseStudies": [
+    {
+      "title": "project-name",
+      "tagline": "One-line description of what it does",
+      "situation": "What problem existed before?",
+      "decision": "What did you build and why?",
+      "outcome": "What changed after?",
+      "metric": "Key metrics · separated · by dots",
+      "tech": ["TypeScript", "Node.js"],
+      "github": "https://github.com/your-org/project",
+      "status": "live"
+    }
+  ],
+  "experience": [
+    {
+      "company": "Company Name",
+      "title": "Your Title",
+      "location": "City",
+      "period": "Start – End",
+      "type": "Industry",
+      "bullets": [
+        "Achievement 1 with measurable impact",
+        "Achievement 2 with measurable impact"
+      ],
+      "recentWork": [
+        "Recent accomplishment 1",
+        "Recent accomplishment 2"
+      ]
+    }
+  ],
+  "education": [
+    {
+      "degree": "Degree Name",
+      "school": "University Name",
+      "year": "2020"
+    }
+  ],
+  "contact": {
+    "cta": "Let's build something together"
+  }
+}
