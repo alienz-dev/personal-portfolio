@@ -1,29 +1,43 @@
 import { NextResponse } from "next/server";
-
-const VALID_USERNAME = "ming";
-const VALID_PASSWORD = "ping";
-const TOKEN = "bWluZzpwaW5n";
+import { expectedToken, safeEqual } from "@/lib/jobs-auth";
 
 export async function POST(request: Request) {
   try {
-    const { username, password } = await request.json();
+    const body: unknown = await request.json();
+    const { username, password } = (body ?? {}) as Record<string, unknown>;
 
-    if (username === VALID_USERNAME && password === VALID_PASSWORD) {
-      const response = NextResponse.json({ ok: true });
+    const validUser = process.env.JOBS_USERNAME;
+    const validPass = process.env.JOBS_PASSWORD;
+    const token = await expectedToken();
 
-      // Set long-lasting cookie: 1 year, httpOnly, sameSite lax
-      response.cookies.set("auth_token", TOKEN, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        path: "/",
-        maxAge: 365 * 24 * 60 * 60, // 1 year in seconds
-      });
-
-      return response;
+    // Unconfigured is a deployment fault, not a failed login — say so rather
+    // than letting it read as a wrong password nobody can ever get right.
+    if (!validUser || !validPass || !token) {
+      return NextResponse.json(
+        { error: "Dashboard login is not configured" },
+        { status: 503 },
+      );
     }
 
-    return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
+    const ok =
+      typeof username === "string" &&
+      typeof password === "string" &&
+      safeEqual(username, validUser) &&
+      safeEqual(password, validPass);
+
+    if (!ok) {
+      return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
+    }
+
+    const response = NextResponse.json({ ok: true });
+    response.cookies.set("auth_token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: 365 * 24 * 60 * 60, // 1 year
+    });
+    return response;
   } catch {
     return NextResponse.json({ error: "Bad request" }, { status: 400 });
   }

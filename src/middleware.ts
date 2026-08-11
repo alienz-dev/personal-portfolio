@@ -1,44 +1,31 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { allowedIps, clientIp, expectedToken, safeEqual } from "@/lib/jobs-auth";
 
-// Simple token: base64 of "ming:ping" -> bWluZzpwaW5n
-const VALID_TOKEN = "bWluZzpwaW5n";
+async function isAuthed(request: NextRequest): Promise<boolean> {
+  const ip = clientIp(request.headers);
+  if (ip && allowedIps().has(ip)) return true;
 
-// Whitelisted IPs — skip auth for these addresses
-const WHITELISTED_IPS = new Set([
-  "115.70.50.123",  // home
-]);
+  // No configured credentials means no way in — see src/lib/jobs-auth.ts.
+  const expected = await expectedToken();
+  if (!expected) return false;
 
-function isWhitelisted(request: NextRequest): boolean {
-  const forwarded = request.headers.get("x-forwarded-for");
-  if (forwarded) {
-    // x-forwarded-for can be "client, proxy1, proxy2"
-    const ips = forwarded.split(",").map((ip) => ip.trim());
-    return ips.some((ip) => WHITELISTED_IPS.has(ip));
-  }
-  return false;
-}
-
-function hasValidAuth(request: NextRequest): boolean {
-  return request.cookies.get("auth_token")?.value === VALID_TOKEN;
-}
-
-function isAuthed(request: NextRequest): boolean {
-  return isWhitelisted(request) || hasValidAuth(request);
+  const cookie = request.cookies.get("auth_token")?.value;
+  return !!cookie && safeEqual(cookie, expected);
 }
 
 function isJobsSubdomain(hostname: string): boolean {
   return hostname.startsWith("jobs.");
 }
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname, hostname } = request.nextUrl;
 
   // ── Subdomain mode: jobs.mingli.world ──────────────────────────────
   if (isJobsSubdomain(hostname)) {
     // Rewrite root to /jobs so the dashboard works at the apex
     if (pathname === "/") {
-      if (!isAuthed(request)) {
+      if (!await isAuthed(request)) {
         return NextResponse.redirect(new URL("/login", request.url));
       }
       const url = request.nextUrl.clone();
@@ -48,7 +35,7 @@ export function middleware(request: NextRequest) {
 
     // /login → /jobs/login (or redirect to home if already authed)
     if (pathname === "/login" || pathname === "/login/") {
-      if (isAuthed(request)) {
+      if (await isAuthed(request)) {
         return NextResponse.redirect(new URL("/", request.url));
       }
       return NextResponse.rewrite(new URL("/jobs/login", request.url));
@@ -56,7 +43,7 @@ export function middleware(request: NextRequest) {
 
     // Protect /jobs routes
     if (pathname.startsWith("/jobs")) {
-      if (!isAuthed(request)) {
+      if (!await isAuthed(request)) {
         return NextResponse.redirect(new URL("/login", request.url));
       }
       return NextResponse.next();
@@ -70,7 +57,7 @@ export function middleware(request: NextRequest) {
 
   // Allow the login page itself
   if (pathname === "/jobs/login") {
-    if (isAuthed(request)) {
+    if (await isAuthed(request)) {
       return NextResponse.redirect(new URL("/jobs", request.url));
     }
     return NextResponse.next();
@@ -78,7 +65,7 @@ export function middleware(request: NextRequest) {
 
   // Protect /jobs routes
   if (pathname.startsWith("/jobs")) {
-    if (!isAuthed(request)) {
+    if (!await isAuthed(request)) {
       const loginUrl = new URL("/jobs/login", request.url);
       loginUrl.searchParams.set("redirect", pathname);
       return NextResponse.redirect(loginUrl);
