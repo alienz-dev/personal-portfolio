@@ -9,6 +9,12 @@ dist/
 # Personal content (not for public repo)
 src/data/content.local.json
 
+# Generated nightly by job-hunter: every listing with its fit score and
+# application status, plus real people by name and LinkedIn URL. This was
+# tracked here and pushed to a public remote for 48 days. The site deploys
+# from the working tree, so it never needs to be committed.
+src/data/jobs/
+
 # Internal project management (not for public repo)
 .portfolio/
 .agents/
